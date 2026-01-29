@@ -80,12 +80,10 @@ export default function Dashboard({ metrics, onMetricClick }: DashboardProps) {
       {/* Header */}
       <div>
         <h1 className="text-3xl font-semibold text-slate-900 mb-1">
-          {currentUser?.role === 'admin' ? 'Admin Dashboard' : 'My Dashboard'}
+          {currentUser?.role === 'admin' ? 'Admin Dashboard' : 'Dashboard'}
         </h1>
         <p className="text-slate-500">
-          {currentUser?.role === 'admin'
-            ? 'Overview of all sales activities'
-            : 'Your personal sales performance'}
+          Overview of all sales activities
         </p>
       </div>
 

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { getQuotations, getQuotationsByUser, calculateMetrics } from '@/lib/data-service';
+import { getQuotations, calculateMetrics } from '@/lib/data-service';
 import Sidebar from './Sidebar';
 import Dashboard from './Dashboard';
 import QuotationsTable from './QuotationsTable';
@@ -15,26 +15,18 @@ export default function MainApp() {
   const [statusFilter, setStatusFilter] = useState<string | undefined>();
   const [refreshKey, setRefreshKey] = useState(0);
 
-  // Load quotations based on role
-  const quotations = currentUser?.role === 'admin'
-    ? getQuotations()
-    : getQuotationsByUser(currentUser?.id || '');
-
-  // Dashboard metrics
+  const quotations = getQuotations();
   const metrics = calculateMetrics(quotations);
 
-  // Refresh handler
   const handleRefresh = () => {
     setRefreshKey((prev) => prev + 1);
   };
 
-  // Filter by status from metrics click
   const handleMetricClick = (filter: string) => {
     setStatusFilter(filter);
     setCurrentPage('quotations');
   };
 
-  // Navigation handler
   const handleNavigate = (page: 'dashboard' | 'quotations' | 'users') => {
     setCurrentPage(page);
     if (page !== 'quotations') {
@@ -50,6 +42,7 @@ export default function MainApp() {
         {currentPage === 'dashboard' && (
           <Dashboard metrics={metrics} onMetricClick={handleMetricClick} />
         )}
+
         {currentPage === 'quotations' && (
           <QuotationsTable
             key={refreshKey}
@@ -58,6 +51,7 @@ export default function MainApp() {
             statusFilter={statusFilter}
           />
         )}
+
         {currentPage === 'users' && currentUser?.role === 'admin' && (
           <UserManagement onUpdate={handleRefresh} />
         )}
