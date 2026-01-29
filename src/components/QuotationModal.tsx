@@ -136,7 +136,7 @@ export default function QuotationModal({ isOpen, onClose, onSave, quotation }: Q
 
   return (
     <Dialog open={isOpen} onOpenChange={handleCancel}>
-      <DialogContent className="max-w-2xl bg-white fade-in-scale shadow-lg border border-slate-200">
+      <DialogContent onOpenAutoFocus={(e) => e.preventDefault()} className="max-w-2xl bg-white fade-in-scale shadow-lg border border-slate-200">
         <DialogHeader className="flex justify-between items-center">
           <DialogTitle className="text-2xl font-bold text-slate-900">
             {isEditing ? 'Edit Quotation' : 'New Quotation'}

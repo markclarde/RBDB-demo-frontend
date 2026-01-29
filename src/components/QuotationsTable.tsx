@@ -221,7 +221,7 @@ export default function QuotationsTable({
             createQuotation(quotationData);
           }
 
-          toast({ title: 'Success' });
+          toast({ title: 'Success!' });
 
           onUpdate();
           setModalOpen(false);

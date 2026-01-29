@@ -1,6 +1,5 @@
 import {
   Toast,
-  ToastClose,
   ToastDescription,
   ToastProvider,
   ToastTitle,
@@ -23,7 +22,6 @@ export function Toaster() {
               )}
             </div>
             {action}
-            <ToastClose />
           </Toast>
         );
       })}
