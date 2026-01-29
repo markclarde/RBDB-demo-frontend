@@ -42,7 +42,7 @@ export default function QuotationsTable({
   const [editingQuotation, setEditingQuotation] = useState<Quotation | null>(null);
   const [viewOnly, setViewOnly] = useState(false);
   const { toast } = useToast();
-  const ITEMS_PER_PAGE = 7;
+  const ITEMS_PER_PAGE = 8;
   const [currentPage, setCurrentPage] = useState(1);
 
   const handleSort = (field: SortField) => {
@@ -245,38 +245,38 @@ export default function QuotationsTable({
             )}
           </tbody>
         </table>
-      </div>
 
-      {totalPages > 1 && (
-        <div className="flex flex-col items-center justify-center gap-1 py-4">
-          <p className="text-sm text-slate-500">
-            Page {currentPage} of {totalPages}
-          </p>
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 rounded-b-lg bg-slate-50">
+            <p className="text-sm text-slate-500 mr-4">
+              Page {currentPage} of {totalPages}
+            </p>
 
-          <div className="flex gap-1">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            >
-              Previous
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              >
+                Previous
+              </Button>
 
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={currentPage === totalPages}
-              onClick={() =>
-                setCurrentPage((p) => Math.min(totalPages, p + 1))
-              }
-            >
-              Next
-            </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={currentPage === totalPages}
+                onClick={() =>
+                  setCurrentPage((p) => Math.min(totalPages, p + 1))
+                }
+              >
+                Next
+              </Button>
+            </div>
           </div>
-        </div>
-      )}
-
+        )}
+      </div>
+      
       <QuotationModal
         isOpen={modalOpen}
         viewOnly={viewOnly}
