@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { User, Entry } from '@/types';
+import { User, Quotation } from '@/types';
 
 interface AuthContextType {
   currentUser: User | null;
@@ -12,7 +12,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Mock users (in real app, this would be from backend)
+// Mock users (in real app, this would come from backend)
 const MOCK_USERS: User[] = [
   {
     id: 'admin-1',
@@ -53,15 +53,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (storedUser) {
       setCurrentUser(JSON.parse(storedUser));
     }
-    
-    // Initialize mock users and entries if not exists
+
+    // Initialize mock users if not exists
     if (!localStorage.getItem('users')) {
       localStorage.setItem('users', JSON.stringify(MOCK_USERS));
     }
-    
-    if (!localStorage.getItem('entries')) {
-      // Initialize with sample entries
-      const sampleEntries: Entry[] = [
+
+    // Initialize sample quotations if not exists
+    if (!localStorage.getItem('quotations')) {
+      const sampleQuotations: Quotation[] = [
         {
           id: '1',
           quotationNumber: 'Q-2024-001',
@@ -137,9 +137,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           updatedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
         },
       ];
-      localStorage.setItem('entries', JSON.stringify(sampleEntries));
+
+      localStorage.setItem('quotations', JSON.stringify(sampleQuotations));
     }
-    
+
     setIsLoading(false);
   }, []);
 
@@ -154,6 +155,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem('currentUser', JSON.stringify(user));
       return true;
     }
+
     return false;
   };
 
@@ -171,7 +173,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;

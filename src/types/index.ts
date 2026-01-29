@@ -1,7 +1,10 @@
+// User Roles
 export type UserRole = 'admin' | 'sales_rep';
 
-export type EntryStatus = 'new' | 'proposal_sent' | 'negotiation' | 'closed_won' | 'closed_lost';
+// Quotation Statuses
+export type QuotationStatus = 'new' | 'proposal_sent' | 'negotiation' | 'closed_won' | 'closed_lost';
 
+// User Type
 export interface User {
   id: string;
   username: string;
@@ -12,7 +15,8 @@ export interface User {
   createdAt: string;
 }
 
-export interface Entry {
+// Quotation Type
+export interface Quotation {
   id: string;
   quotationNumber: string;
   clientName: string;
@@ -20,7 +24,7 @@ export interface Entry {
   email: string;
   phone: string;
   salesAmount: number;
-  status: EntryStatus;
+  status: QuotationStatus;
   lastContactDate: string;
   assignedTo: string; // User ID
   notes?: string;
@@ -28,6 +32,7 @@ export interface Entry {
   updatedAt: string;
 }
 
+// Dashboard Metrics
 export interface DashboardMetrics {
   totalRequests: number;
   totalSales: number;

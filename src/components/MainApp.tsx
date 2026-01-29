@@ -1,37 +1,42 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { getEntries, getEntriesByUser, calculateMetrics } from '@/lib/data-service';
+import { getQuotations, getQuotationsByUser, calculateMetrics } from '@/lib/data-service';
 import Sidebar from './Sidebar';
 import Dashboard from './Dashboard';
-import EntriesTable from './EntriesTable';
+import QuotationsTable from './QuotationsTable';
 import UserManagement from './UserManagement';
 
 export default function MainApp() {
   const { currentUser } = useAuth();
-  const [currentPage, setCurrentPage] = useState<'dashboard' | 'entries' | 'users'>('dashboard');
+  const [currentPage, setCurrentPage] = useState<'dashboard' | 'quotations' | 'users'>('dashboard');
   const [statusFilter, setStatusFilter] = useState<string | undefined>();
   const [refreshKey, setRefreshKey] = useState(0);
 
-  const entries = currentUser?.role === 'admin'
-    ? getEntries()
-    : getEntriesByUser(currentUser?.id || '');
+  // Load quotations based on role
+  const quotations = currentUser?.role === 'admin'
+    ? getQuotations()
+    : getQuotationsByUser(currentUser?.id || '');
 
-  const metrics = calculateMetrics(entries);
+  // Dashboard metrics
+  const metrics = calculateMetrics(quotations);
 
+  // Refresh handler
   const handleRefresh = () => {
     setRefreshKey((prev) => prev + 1);
   };
 
+  // Filter by status from metrics click
   const handleMetricClick = (filter: string) => {
     setStatusFilter(filter);
-    setCurrentPage('entries');
+    setCurrentPage('quotations');
   };
 
-  const handleNavigate = (page: 'dashboard' | 'entries' | 'users') => {
+  // Navigation handler
+  const handleNavigate = (page: 'dashboard' | 'quotations' | 'users') => {
     setCurrentPage(page);
-    if (page !== 'entries') {
+    if (page !== 'quotations') {
       setStatusFilter(undefined);
     }
   };
@@ -45,10 +50,10 @@ export default function MainApp() {
           <Dashboard metrics={metrics} onMetricClick={handleMetricClick} />
         )}
         
-        {currentPage === 'entries' && (
-          <EntriesTable
+        {currentPage === 'quotations' && (
+          <QuotationsTable
             key={refreshKey}
-            entries={entries}
+            quotations={quotations}
             onUpdate={handleRefresh}
             statusFilter={statusFilter}
           />

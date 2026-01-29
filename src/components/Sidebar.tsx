@@ -5,8 +5,8 @@ import { LayoutDashboard, FileText, Users, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface SidebarProps {
-  currentPage: 'dashboard' | 'entries' | 'users';
-  onNavigate: (page: 'dashboard' | 'entries' | 'users') => void;
+  currentPage: 'dashboard' | 'quotations' | 'users';
+  onNavigate: (page: 'dashboard' | 'quotations' | 'users') => void;
 }
 
 export default function Sidebar({ currentPage, onNavigate }: SidebarProps) {
@@ -14,7 +14,7 @@ export default function Sidebar({ currentPage, onNavigate }: SidebarProps) {
 
   const navItems = [
     { id: 'dashboard' as const, label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'entries' as const, label: 'Entries', icon: FileText },
+    { id: 'quotations' as const, label: 'Quotations', icon: FileText },
     ...(currentUser?.role === 'admin'
       ? [{ id: 'users' as const, label: 'User Management', icon: Users }]
       : []),

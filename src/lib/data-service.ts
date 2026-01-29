@@ -1,62 +1,62 @@
-import { Entry, User, DashboardMetrics } from '@/types';
+import { Quotation, User, DashboardMetrics } from '@/types';
 
-// Entry Operations
-export function getEntries(): Entry[] {
-  const entries = localStorage.getItem('entries');
-  return entries ? JSON.parse(entries) : [];
+// Quotation Operations
+export function getQuotations(): Quotation[] {
+  const quotations = localStorage.getItem('quotations');
+  return quotations ? JSON.parse(quotations) : [];
 }
 
-export function getEntriesByUser(userId: string): Entry[] {
-  return getEntries().filter((entry) => entry.assignedTo === userId);
+export function getQuotationsByUser(userId: string): Quotation[] {
+  return getQuotations().filter((quotation) => quotation.assignedTo === userId);
 }
 
-export function getEntryById(id: string): Entry | undefined {
-  return getEntries().find((entry) => entry.id === id);
+export function getQuotationById(id: string): Quotation | undefined {
+  return getQuotations().find((quotation) => quotation.id === id);
 }
 
-export function createEntry(entry: Omit<Entry, 'id' | 'createdAt' | 'updatedAt'>): Entry {
-  const entries = getEntries();
-  const newEntry: Entry = {
-    ...entry,
-    id: `entry-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+export function createQuotation(quotation: Omit<Quotation, 'id' | 'createdAt' | 'updatedAt'>): Quotation {
+  const quotations = getQuotations();
+  const newQuotation: Quotation = {
+    ...quotation,
+    id: `quotation-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
-  entries.push(newEntry);
-  localStorage.setItem('entries', JSON.stringify(entries));
-  return newEntry;
+  quotations.push(newQuotation);
+  localStorage.setItem('quotations', JSON.stringify(quotations));
+  return newQuotation;
 }
 
-export function updateEntry(id: string, updates: Partial<Entry>): Entry | null {
-  const entries = getEntries();
-  const index = entries.findIndex((entry) => entry.id === id);
+export function updateQuotation(id: string, updates: Partial<Quotation>): Quotation | null {
+  const quotations = getQuotations();
+  const index = quotations.findIndex((quotation) => quotation.id === id);
   
   if (index === -1) return null;
   
-  entries[index] = {
-    ...entries[index],
+  quotations[index] = {
+    ...quotations[index],
     ...updates,
     updatedAt: new Date().toISOString(),
   };
   
-  localStorage.setItem('entries', JSON.stringify(entries));
-  return entries[index];
+  localStorage.setItem('quotations', JSON.stringify(quotations));
+  return quotations[index];
 }
 
-export function deleteEntry(id: string): boolean {
-  const entries = getEntries();
-  const filteredEntries = entries.filter((entry) => entry.id !== id);
+export function deleteQuotation(id: string): boolean {
+  const quotations = getQuotations();
+  const filteredQuotations = quotations.filter((quotation) => quotation.id !== id);
   
-  if (filteredEntries.length === entries.length) return false;
+  if (filteredQuotations.length === quotations.length) return false;
   
-  localStorage.setItem('entries', JSON.stringify(filteredEntries));
+  localStorage.setItem('quotations', JSON.stringify(filteredQuotations));
   return true;
 }
 
 export function isQuotationNumberUnique(quotationNumber: string, excludeId?: string): boolean {
-  const entries = getEntries();
-  return !entries.some(
-    (entry) => entry.quotationNumber === quotationNumber && entry.id !== excludeId
+  const quotations = getQuotations();
+  return !quotations.some(
+    (quotation) => quotation.quotationNumber === quotationNumber && quotation.id !== excludeId
   );
 }
 
@@ -109,18 +109,18 @@ export function isUsernameUnique(username: string, excludeId?: string): boolean 
 }
 
 // Dashboard Metrics
-export function calculateMetrics(entries: Entry[]): DashboardMetrics {
-  const totalRequests = entries.length;
-  const totalSales = entries
-    .filter((e) => e.status === 'closed_won')
-    .reduce((sum, e) => sum + e.salesAmount, 0);
+export function calculateMetrics(quotations: Quotation[]): DashboardMetrics {
+  const totalRequests = quotations.length;
+  const totalSales = quotations
+    .filter((q) => q.status === 'closed_won')
+    .reduce((sum, q) => sum + q.salesAmount, 0);
   
   const statusBreakdown = {
-    new: entries.filter((e) => e.status === 'new').length,
-    proposal_sent: entries.filter((e) => e.status === 'proposal_sent').length,
-    negotiation: entries.filter((e) => e.status === 'negotiation').length,
-    closed_won: entries.filter((e) => e.status === 'closed_won').length,
-    closed_lost: entries.filter((e) => e.status === 'closed_lost').length,
+    new: quotations.filter((q) => q.status === 'new').length,
+    proposal_sent: quotations.filter((q) => q.status === 'proposal_sent').length,
+    negotiation: quotations.filter((q) => q.status === 'negotiation').length,
+    closed_won: quotations.filter((q) => q.status === 'closed_won').length,
+    closed_lost: quotations.filter((q) => q.status === 'closed_lost').length,
   };
   
   const closedDeals = statusBreakdown.closed_won + statusBreakdown.closed_lost;
