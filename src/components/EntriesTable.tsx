@@ -1,0 +1,290 @@
+'use client';
+
+import { useState } from 'react';
+import { Entry } from '@/types';
+import {
+  formatCurrency,
+  formatDate,
+  getStatusLabel,
+  getStatusColor,
+  isOverdue,
+} from '@/lib/format';
+import { getDaysSinceContact, getUserById } from '@/lib/data-service';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Edit, Plus, ArrowUpDown, AlertCircle } from 'lucide-react';
+import EntryModal from './EntryModal';
+
+interface EntriesTableProps {
+  entries: Entry[];
+  onUpdate: () => void;
+  statusFilter?: string;
+}
+
+type SortField =
+  | 'quotationNumber'
+  | 'clientName'
+  | 'salesAmount'
+  | 'status'
+  | 'lastContactDate';
+type SortDirection = 'asc' | 'desc';
+
+export default function EntriesTable({
+  entries,
+  onUpdate,
+  statusFilter,
+}: EntriesTableProps) {
+  const [sortField, setSortField] = useState<SortField>('lastContactDate');
+  const [sortDirection, setSortDirection] =
+    useState<SortDirection>('desc');
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingEntry, setEditingEntry] = useState<Entry | null>(null);
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const getSortedEntries = () => {
+    let filtered = [...entries];
+
+    if (statusFilter && statusFilter !== 'all' && statusFilter !== 'closed') {
+      filtered = filtered.filter((e) => e.status === statusFilter);
+    } else if (statusFilter === 'closed') {
+      filtered = filtered.filter(
+        (e) => e.status === 'closed_won' || e.status === 'closed_lost'
+      );
+    }
+
+    return filtered.sort((a, b) => {
+      let aVal: any = a[sortField];
+      let bVal: any = b[sortField];
+
+      if (sortField === 'salesAmount') {
+        aVal = a.salesAmount;
+        bVal = b.salesAmount;
+      } else if (sortField === 'lastContactDate') {
+        aVal = new Date(a.lastContactDate).getTime();
+        bVal = new Date(b.lastContactDate).getTime();
+      } else {
+        aVal = String(aVal).toLowerCase();
+        bVal = String(bVal).toLowerCase();
+      }
+
+      if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
+      if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  };
+
+  const sortedEntries = getSortedEntries();
+
+  const SortButton = ({
+    field,
+    children,
+  }: {
+    field: SortField;
+    children: React.ReactNode;
+  }) => (
+    <button
+      onClick={() => handleSort(field)}
+      className="flex items-center gap-1 text-slate-600 hover:text-slate-900 transition-colors"
+    >
+      {children}
+      <ArrowUpDown className="w-4 h-4" />
+    </button>
+  );
+
+  return (
+    <div className="p-8 space-y-6 bg-slate-50 min-h-screen">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-semibold text-slate-900 mb-1">
+            Entries
+          </h1>
+          <p className="text-slate-500">
+            {sortedEntries.length}{' '}
+            {sortedEntries.length === 1 ? 'entry' : 'entries'}
+          </p>
+        </div>
+
+        <Button
+          onClick={() => {
+            setEditingEntry(null);
+            setModalOpen(true);
+          }}
+          className="bg-slate-900 hover:bg-slate-800 text-white gap-2"
+        >
+          <Plus className="w-5 h-5" />
+          New Entry
+        </Button>
+      </div>
+
+      {/* Table */}
+      <div className="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="bg-slate-50 border-b border-slate-200">
+                {[
+                  ['quotationNumber', 'Quotation #'],
+                  ['clientName', 'Client'],
+                  [null, 'Contact'],
+                  ['salesAmount', 'Amount'],
+                  ['status', 'Status'],
+                  ['lastContactDate', 'Last Contact'],
+                  [null, 'Assigned To'],
+                ].map(([field, label]) => (
+                  <th
+                    key={label}
+                    className="px-4 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider"
+                  >
+                    {field ? (
+                      <SortButton field={field as SortField}>
+                        {label}
+                      </SortButton>
+                    ) : (
+                      label
+                    )}
+                  </th>
+                ))}
+                <th className="px-4 py-3 text-right text-xs font-medium text-slate-600 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+
+            <tbody className="divide-y divide-slate-200">
+              {sortedEntries.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={8}
+                    className="px-4 py-12 text-center text-slate-500"
+                  >
+                    No entries found
+                  </td>
+                </tr>
+              ) : (
+                sortedEntries.map((entry) => {
+                  const daysSince = getDaysSinceContact(
+                    entry.lastContactDate
+                  );
+                  const overdue = isOverdue(
+                    entry.lastContactDate,
+                    entry.status
+                  );
+                  const assignedUser = getUserById(entry.assignedTo);
+
+                  return (
+                    <tr
+                      key={entry.id}
+                      className="hover:bg-slate-50 transition-colors"
+                    >
+                      <td className="px-4 py-3 text-sm font-mono text-slate-900">
+                        {entry.quotationNumber}
+                      </td>
+
+                      <td className="px-4 py-3 font-medium text-slate-900">
+                        {entry.clientName}
+                      </td>
+
+                      <td className="px-4 py-3">
+                        <div className="text-sm text-slate-900">
+                          {entry.contactPerson}
+                        </div>
+                        <div className="text-xs text-slate-500">
+                          {entry.email}
+                        </div>
+                      </td>
+
+                      <td className="px-4 py-3 font-mono font-medium text-slate-900">
+                        {formatCurrency(entry.salesAmount)}
+                      </td>
+
+                      <td className="px-4 py-3">
+                        <Badge
+                          className={`${getStatusColor(
+                            entry.status
+                          )} text-white border-0`}
+                        >
+                          {getStatusLabel(entry.status)}
+                        </Badge>
+                      </td>
+
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <div>
+                            <div className="text-sm text-slate-900">
+                              {formatDate(entry.lastContactDate)}
+                            </div>
+                            <div
+                              className={`text-xs ${
+                                overdue
+                                  ? 'text-red-600 font-medium'
+                                  : 'text-slate-500'
+                              }`}
+                            >
+                              {daysSince === 0
+                                ? 'Today'
+                                : `${daysSince} days ago`}
+                            </div>
+                          </div>
+                          {overdue && (
+                            <AlertCircle className="w-4 h-4 text-red-600" />
+                          )}
+                        </div>
+                      </td>
+
+                      <td className="px-4 py-3 text-sm text-slate-900">
+                        {assignedUser?.name || 'Unknown'}
+                      </td>
+
+                      <td className="px-4 py-3 text-right">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setEditingEntry(entry);
+                            setModalOpen(true);
+                          }}
+                          className="hover:bg-slate-100"
+                        >
+                          <Edit className="w-4 h-4 text-slate-600" />
+                        </Button>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <EntryModal
+        isOpen={modalOpen}
+        onClose={() => {
+          setModalOpen(false);
+          setEditingEntry(null);
+        }}
+        onSave={async (entryData) => {
+          if (editingEntry) {
+            const { updateEntry } = await import('@/lib/data-service');
+            updateEntry(editingEntry.id, entryData);
+          } else {
+            const { createEntry } = await import('@/lib/data-service');
+            createEntry(entryData);
+          }
+          onUpdate();
+          setModalOpen(false);
+        }}
+        entry={editingEntry}
+      />
+    </div>
+  );
+}
