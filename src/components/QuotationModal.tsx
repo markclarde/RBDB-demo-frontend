@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Quotation, QuotationStatus } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
-import { isQuotationNumberUnique, getSalesReps } from '@/lib/data-service';
+import { getSalesReps } from '@/lib/data-service';
 import { formatDateInput, getStatusLabel } from '@/lib/format';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -24,8 +24,13 @@ export default function QuotationModal({ isOpen, onClose, onSave, quotation }: Q
   const salesReps = getSalesReps();
   const isEditing = !!quotation;
 
+  const generateQuotationNumber = () => {
+    const random = Math.floor(1000 + Math.random() * 9000); // 1000-9999
+    return `DVO.SAM.EQTN.${random}`;
+  };
+
   const [formData, setFormData] = useState({
-    quotationNumber: '',
+    quotationNumber: generateQuotationNumber(),
     clientName: '',
     contactPerson: '',
     email: '',
@@ -56,7 +61,7 @@ export default function QuotationModal({ isOpen, onClose, onSave, quotation }: Q
       });
     } else {
       setFormData({
-        quotationNumber: '',
+        quotationNumber: generateQuotationNumber(),
         clientName: '',
         contactPerson: '',
         email: '',
@@ -73,12 +78,6 @@ export default function QuotationModal({ isOpen, onClose, onSave, quotation }: Q
 
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
-
-    if (!formData.quotationNumber.trim()) {
-      newErrors.quotationNumber = 'Quotation number is required';
-    } else if (!isQuotationNumberUnique(formData.quotationNumber, quotation?.id)) {
-      newErrors.quotationNumber = 'Quotation number already exists';
-    }
 
     if (!formData.clientName.trim()) newErrors.clientName = 'Client name is required';
     if (!formData.contactPerson.trim()) newErrors.contactPerson = 'Contact person is required';
@@ -118,7 +117,7 @@ export default function QuotationModal({ isOpen, onClose, onSave, quotation }: Q
 
   const handleCancel = () => {
     setFormData({
-      quotationNumber: '',
+      quotationNumber: generateQuotationNumber(),
       clientName: '',
       contactPerson: '',
       email: '',
@@ -138,26 +137,17 @@ export default function QuotationModal({ isOpen, onClose, onSave, quotation }: Q
   return (
     <Dialog open={isOpen} onOpenChange={handleCancel}>
       <DialogContent className="max-w-2xl bg-white fade-in-scale shadow-lg border border-slate-200">
-        <DialogHeader>
+        <DialogHeader className="flex justify-between items-center">
           <DialogTitle className="text-2xl font-bold text-slate-900">
             {isEditing ? 'Edit Quotation' : 'New Quotation'}
           </DialogTitle>
+
+          <div className="text-slate-800 font-mono font-bold text-lg">
+            {formData.quotationNumber}
+          </div>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 mt-4 text-slate-900">
-          {/* Quotation Number */}
-          <div className="space-y-2">
-            <Label htmlFor="quotationNumber" className="font-medium text-slate-900">Quotation Number *</Label>
-            <Input
-              id="quotationNumber"
-              value={formData.quotationNumber}
-              onChange={(e) => setFormData({ ...formData, quotationNumber: e.target.value })}
-              placeholder="Q-2026-001"
-              className={`${errors.quotationNumber ? 'border-red-500 shake' : ''} bg-white text-slate-900`}
-            />
-            {errors.quotationNumber && <p className="text-red-600 text-xs">{errors.quotationNumber}</p>}
-          </div>
-
           {/* Client & Contact */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -216,7 +206,7 @@ export default function QuotationModal({ isOpen, onClose, onSave, quotation }: Q
           {/* Sales Amount & Status */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="salesAmount" className="font-medium text-slate-900">Sales Amount ($) *</Label>
+              <Label htmlFor="salesAmount" className="font-medium text-slate-900">Sales Amount (₱) *</Label>
               <Input
                 id="salesAmount"
                 type="number"
@@ -231,7 +221,10 @@ export default function QuotationModal({ isOpen, onClose, onSave, quotation }: Q
 
             <div className="space-y-2">
               <Label htmlFor="status" className="font-medium text-slate-900">Status *</Label>
-              <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value as QuotationStatus })}>
+              <Select
+                value={formData.status}
+                onValueChange={(value) => setFormData({ ...formData, status: value as QuotationStatus })}
+              >
                 <SelectTrigger className="bg-white text-slate-900">
                   <SelectValue />
                 </SelectTrigger>
@@ -246,38 +239,39 @@ export default function QuotationModal({ isOpen, onClose, onSave, quotation }: Q
             </div>
           </div>
 
-          {/* Last Contact */}
-          <div className="space-y-2">
-            <Label htmlFor="lastContactDate" className="font-medium text-slate-900">Last Contact Date *</Label>
-            <Input
-              id="lastContactDate"
-              type="date"
-              value={formData.lastContactDate}
-              onChange={(e) => setFormData({ ...formData, lastContactDate: e.target.value })}
-              className="bg-white text-slate-900"
-            />
-          </div>
+          {/* Assigned To & Last Contact Date */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="assignedTo" className="font-medium text-slate-900">Assigned To *</Label>
+              <Select
+                value={formData.assignedTo}
+                onValueChange={(value) => setFormData({ ...formData, assignedTo: value })}
+                disabled={currentUser?.role === 'sales_rep'}
+              >
+                <SelectTrigger className="bg-white text-slate-900">
+                  <SelectValue placeholder="Select sales representative" />
+                </SelectTrigger>
+                <SelectContent>
+                  {salesReps.map((rep) => (
+                    <SelectItem key={rep.id} value={rep.id} className="text-slate-900">
+                      {rep.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.assignedTo && <p className="text-red-600 text-xs">{errors.assignedTo}</p>}
+            </div>
 
-          {/* Assigned To */}
-          <div className="space-y-2">
-            <Label htmlFor="assignedTo" className="font-medium text-slate-900">Assigned To *</Label>
-            <Select
-              value={formData.assignedTo}
-              onValueChange={(value) => setFormData({ ...formData, assignedTo: value })}
-              disabled={currentUser?.role === 'sales_rep'}
-            >
-              <SelectTrigger className="bg-white text-slate-900">
-                <SelectValue placeholder="Select sales representative" />
-              </SelectTrigger>
-              <SelectContent>
-                {salesReps.map((rep) => (
-                  <SelectItem key={rep.id} value={rep.id} className="text-slate-900">
-                    {rep.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.assignedTo && <p className="text-red-600 text-xs">{errors.assignedTo}</p>}
+            <div className="space-y-2">
+              <Label htmlFor="lastContactDate" className="font-medium text-slate-900">Last Contact Date *</Label>
+              <Input
+                id="lastContactDate"
+                type="date"
+                value={formData.lastContactDate}
+                onChange={(e) => setFormData({ ...formData, lastContactDate: e.target.value })}
+                className="bg-white text-slate-900"
+              />
+            </div>
           </div>
 
           {/* Notes */}
@@ -295,7 +289,7 @@ export default function QuotationModal({ isOpen, onClose, onSave, quotation }: Q
 
           {/* Buttons */}
           <div className="flex gap-3 pt-4 border-t border-slate-200">
-           <Button
+            <Button
               type="button"
               onClick={handleCancel}
               className="flex-1 bg-slate-50 text-slate-900 border border-slate-300 hover:bg-slate-100"

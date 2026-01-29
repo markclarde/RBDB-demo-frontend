@@ -23,6 +23,7 @@ interface QuotationsTableProps {
 
 type SortField =
   | 'quotationNumber'
+  | 'createdAt'
   | 'clientName'
   | 'salesAmount'
   | 'status'
@@ -66,9 +67,9 @@ export default function QuotationsTable({
       if (sortField === 'salesAmount') {
         aVal = a.salesAmount;
         bVal = b.salesAmount;
-      } else if (sortField === 'lastContactDate') {
-        aVal = new Date(a.lastContactDate).getTime();
-        bVal = new Date(b.lastContactDate).getTime();
+      } else if (sortField === 'createdAt' || sortField === 'lastContactDate') {
+        aVal = new Date(aVal).getTime();
+        bVal = new Date(bVal).getTime();
       } else {
         aVal = String(aVal).toLowerCase();
         bVal = String(bVal).toLowerCase();
@@ -101,8 +102,7 @@ export default function QuotationsTable({
             Quotations
           </h1>
           <p className="text-slate-500">
-            {sortedQuotations.length}{' '}
-            {sortedQuotations.length === 1 ? 'quotation' : 'quotations'}
+            {sortedQuotations.length} {sortedQuotations.length === 1 ? 'quotation' : 'quotations'}
           </p>
         </div>
 
@@ -126,12 +126,12 @@ export default function QuotationsTable({
               <tr className="bg-slate-50 border-b border-slate-200">
                 {[
                   ['quotationNumber', 'Quotation #'],
+                  ['createdAt', 'Date'],
                   ['clientName', 'Client'],
-                  [null, 'Contact'],
+                  [null, 'Representative'],
                   ['salesAmount', 'Amount'],
                   ['status', 'Status'],
                   ['lastContactDate', 'Last Contact'],
-                  [null, 'Assigned To'],
                 ].map(([field, label]) => (
                   <th
                     key={label}
@@ -162,14 +162,10 @@ export default function QuotationsTable({
                   return (
                     <tr key={q.id} className="hover:bg-slate-50 transition-colors">
                       <td className="px-4 py-3 text-sm font-mono text-slate-900">{q.quotationNumber}</td>
+                      <td className="px-4 py-3 text-sm text-slate-900">{formatDate(q.createdAt)}</td>
                       <td className="px-4 py-3 font-medium text-slate-900">{q.clientName}</td>
-                      <td className="px-4 py-3">
-                        <div className="text-sm text-slate-900">{q.contactPerson}</div>
-                        <div className="text-xs text-slate-500">{q.email}</div>
-                      </td>
-                      <td className="px-4 py-3 font-mono font-medium text-slate-900">
-                        {formatCurrency(q.salesAmount)}
-                      </td>
+                      <td className="px-4 py-3 text-sm text-slate-900">{assignedUser?.name || 'Unknown'}</td>
+                      <td className="px-4 py-3 font-mono font-medium text-slate-900">{formatCurrency(q.salesAmount)}</td>
                       <td className="px-4 py-3">
                         <Badge className={`${getStatusColor(q.status)} text-white border-0`}>
                           {getStatusLabel(q.status)}
@@ -186,7 +182,6 @@ export default function QuotationsTable({
                           {overdue && <AlertCircle className="w-4 h-4 text-red-600" />}
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-sm text-slate-900">{assignedUser?.name || 'Unknown'}</td>
                       <td className="px-4 py-3 text-right">
                         <Button
                           variant="ghost"
