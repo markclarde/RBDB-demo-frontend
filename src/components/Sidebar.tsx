@@ -28,7 +28,7 @@ export default function Sidebar({ currentPage, onNavigate }: SidebarProps) {
             <FileText className="w-6 h-6 text-slate-700" />
           </div>
           <div>
-            <h2 className="font-semibold text-lg">Sales System</h2>
+            <h2 className="font-semibold text-lg">RBDB Sales</h2>
           </div>
         </div>
 
