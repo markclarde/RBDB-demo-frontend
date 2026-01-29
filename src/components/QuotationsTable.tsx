@@ -13,6 +13,7 @@ import { getDaysSinceContact, getUserById } from '@/lib/data-service';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Edit, Plus, ArrowUpDown, AlertCircle } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
 import QuotationModal from './QuotationModal';
 
 interface QuotationsTableProps {
@@ -39,6 +40,7 @@ export default function QuotationsTable({
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [modalOpen, setModalOpen] = useState(false);
   const [editingQuotation, setEditingQuotation] = useState<Quotation | null>(null);
+  const { toast } = useToast();
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -218,6 +220,9 @@ export default function QuotationsTable({
             const { createQuotation } = await import('@/lib/data-service');
             createQuotation(quotationData);
           }
+
+          toast({ title: 'Success' });
+
           onUpdate();
           setModalOpen(false);
         }}

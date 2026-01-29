@@ -7,6 +7,7 @@ import Sidebar from './Sidebar';
 import Dashboard from './Dashboard';
 import QuotationsTable from './QuotationsTable';
 import UserManagement from './UserManagement';
+import { Toaster } from './ui/toaster';
 
 export default function MainApp() {
   const { currentUser } = useAuth();
@@ -45,11 +46,10 @@ export default function MainApp() {
     <div className="flex h-screen bg-[#1a1d29] overflow-hidden">
       <Sidebar currentPage={currentPage} onNavigate={handleNavigate} />
       
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto relative">
         {currentPage === 'dashboard' && (
           <Dashboard metrics={metrics} onMetricClick={handleMetricClick} />
         )}
-        
         {currentPage === 'quotations' && (
           <QuotationsTable
             key={refreshKey}
@@ -58,10 +58,11 @@ export default function MainApp() {
             statusFilter={statusFilter}
           />
         )}
-        
         {currentPage === 'users' && currentUser?.role === 'admin' && (
           <UserManagement onUpdate={handleRefresh} />
         )}
+
+        <Toaster />
       </main>
     </div>
   );

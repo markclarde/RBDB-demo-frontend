@@ -11,7 +11,7 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "Sales Representative System",
+  title: "RBDB Sales System",
   description: "Manage client sales requests with role-based access control",
 };
 
