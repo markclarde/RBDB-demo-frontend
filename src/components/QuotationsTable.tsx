@@ -1,6 +1,6 @@
   'use client';
 
-  import { useState, useEffect } from 'react';
+  import { useState, useEffect, useRef } from 'react';
   import { Quotation } from '@/types';
   import {
     formatCurrency,
@@ -43,7 +43,8 @@
     const [editingQuotation, setEditingQuotation] = useState<Quotation | null>(null);
     const [viewOnly, setViewOnly] = useState(false);
     const { toast } = useToast();
-    const ITEMS_PER_PAGE = 8;
+    const [itemsPerPage, setItemsPerPage] = useState(8);
+    const tableWrapperRef = useRef<HTMLDivElement>(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
     const [appliedStatuses, setAppliedStatuses] = useState<string[]>([]);
@@ -81,11 +82,44 @@
       );
     });
 
-    const totalPages = Math.ceil(searchedQuotations.length / ITEMS_PER_PAGE);
+    const totalPages = Math.ceil(searchedQuotations.length / itemsPerPage);
     const paginatedQuotations = searchedQuotations.slice(
-      (currentPage - 1) * ITEMS_PER_PAGE,
-      currentPage * ITEMS_PER_PAGE
+      (currentPage - 1) * itemsPerPage,
+      currentPage * itemsPerPage
     );
+
+    useEffect(() => {
+      const calculateItemsPerPage = () => {
+        if (!tableWrapperRef.current) return;
+
+        const wrapperRect =
+          tableWrapperRef.current.getBoundingClientRect();
+
+        const availableHeight =
+          window.innerHeight - wrapperRect.top;
+
+        const paginationHeight = totalPages > 1 ? 80 : 0;
+
+        const firstRow =
+          tableWrapperRef.current.querySelector('tbody tr');
+
+        const rowHeight =
+          firstRow?.getBoundingClientRect().height || 44;
+
+        const rows = Math.floor(
+          (availableHeight - paginationHeight) / rowHeight
+        );
+
+        setItemsPerPage(rows > 0 ? rows : 1);
+      };
+
+      calculateItemsPerPage();
+
+      window.addEventListener('resize', calculateItemsPerPage);
+
+      return () =>
+        window.removeEventListener('resize', calculateItemsPerPage);
+    }, [searchedQuotations.length, totalPages]);
 
     const SortButton = ({ field, children }: { field: SortField; children: React.ReactNode }) => (
       <button
@@ -160,9 +194,11 @@
           </div>
         </div>
 
-
         {/* Table */}
-        <div className="bg-white border border-slate-200 rounded-lg shadow-sm overflow-visible">
+        <div
+          ref={tableWrapperRef}
+          className="bg-white border border-slate-200 rounded-lg shadow-sm overflow-visible"
+        >
           <table className="w-full table-fixed">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200">
