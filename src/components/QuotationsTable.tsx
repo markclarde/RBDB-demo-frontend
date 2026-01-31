@@ -36,7 +36,7 @@ export default function QuotationsTable({
   onUpdate,
   statusFilter,
 }: QuotationsTableProps) {
-  const [sortField, setSortField] = useState<SortField>('lastContactDate');
+  const [sortField, setSortField] = useState<SortField>('createdAt');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [modalOpen, setModalOpen] = useState(false);
   const [editingQuotation, setEditingQuotation] = useState<Quotation | null>(null);
@@ -247,7 +247,7 @@ export default function QuotationsTable({
         </table>
 
         {totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 rounded-b-lg bg-slate-50">
+          <div className="flex items-center justify-between px-4 py-2 border-t border-slate-200 rounded-b-lg bg-slate-50">
             <p className="text-sm text-slate-500 mr-4">
               Page {currentPage} of {totalPages}
             </p>

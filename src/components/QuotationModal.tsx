@@ -78,14 +78,37 @@ export default function QuotationModal({ isOpen, onClose, onSave, quotation, vie
 
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
+    const amount = parseFloat(formData.salesAmount.replace(/,/g, ''));
 
-    if (!formData.clientName.trim()) newErrors.clientName = 'Client name is required';
-    if (!formData.contactPerson.trim()) newErrors.contactPerson = 'Contact person is required';
-    if (!formData.email.trim()) newErrors.email = 'Email is required';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = 'Invalid email format';
-    if (!formData.phone.trim()) newErrors.phone = 'Phone is required';
-    if (!formData.salesAmount || parseFloat(formData.salesAmount) <= 0) newErrors.salesAmount = 'Valid sales amount is required';
-    if (!formData.assignedTo) newErrors.assignedTo = 'Sales representative must be assigned';
+    if (!formData.clientName.trim())
+      newErrors.clientName = 'Client name is required';
+
+    if (!formData.contactPerson.trim())
+      newErrors.contactPerson = 'Contact person is required';
+
+    if (!formData.email.trim())
+      newErrors.email = 'Email is required';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
+      newErrors.email = 'Invalid email format';
+
+    if (!formData.phone)
+      newErrors.phone = 'Phone is required';
+    else if (!/^9\d{9}$/.test(formData.phone))
+      newErrors.phone = 'Enter valid PH mobile number (9XXXXXXXXX)';
+
+    if (!formData.salesAmount)
+      newErrors.salesAmount = 'Sales amount is required';
+    else if (isNaN(amount) || amount <= 0)
+      newErrors.salesAmount = 'Enter valid amount';
+
+    if (!formData.assignedTo)
+      newErrors.assignedTo = 'Sales representative must be assigned';
+
+    if (!formData.status)
+      newErrors.status = 'Status is required';
+
+    if (!formData.lastContactDate)
+      newErrors.lastContactDate = 'Last contact date is required';
 
     setErrors(newErrors);
 
@@ -104,7 +127,8 @@ export default function QuotationModal({ isOpen, onClose, onSave, quotation, vie
 
     onSave({
       ...formData,
-      salesAmount: parseFloat(formData.salesAmount),
+      phone: `+63${formData.phone}`,
+      salesAmount: parseFloat(formData.salesAmount.replace(/,/g, '')),
     });
     onClose();
   };
@@ -132,10 +156,20 @@ export default function QuotationModal({ isOpen, onClose, onSave, quotation, vie
             <div className="space-y-2">
               <Label htmlFor="clientName">Client Name *</Label>
               <Input id="clientName" value={formData.clientName} disabled={!editingMode} onChange={(e) => setFormData({ ...formData, clientName: e.target.value })} className="bg-white text-slate-900" />
+              {errors.clientName && (
+                <p className="text-xs text-red-500 mt-0.5">
+                  {errors.clientName}
+                </p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="contactPerson">Contact Person *</Label>
               <Input id="contactPerson" value={formData.contactPerson} disabled={!editingMode} onChange={(e) => setFormData({ ...formData, contactPerson: e.target.value })} className="bg-white text-slate-900" />
+              {errors.contactPerson && (
+                <p className="text-xs text-red-500 mt-0.5">
+                  {errors.contactPerson}
+                </p>
+              )}
             </div>
           </div>
 
@@ -143,17 +177,62 @@ export default function QuotationModal({ isOpen, onClose, onSave, quotation, vie
             <div className="space-y-2">
               <Label htmlFor="email">Email *</Label>
               <Input id="email" type="email" value={formData.email} disabled={!editingMode} onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="bg-white text-slate-900" />
+              {errors.email && (
+                <p className="text-xs text-red-500 mt-0.5">
+                  {errors.email}
+                </p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="phone">Phone *</Label>
-              <Input id="phone" value={formData.phone} disabled={!editingMode} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} className="bg-white text-slate-900" />
+              <div className="flex">
+                <div className="px-3 flex items-center bg-slate-100 border border-r-0 border-slate-300 rounded-l-md text-slate-600">
+                  +63
+                </div>
+                <Input
+                  id="phone"
+                  type="tel"
+                  inputMode="numeric"
+                  maxLength={10}
+                  value={formData.phone}
+                  disabled={!editingMode}
+                  onChange={(e) => {
+                    const digitsOnly = e.target.value.replace(/\D/g, '');
+                    setFormData({ ...formData, phone: digitsOnly });
+                  }}
+                  className="rounded-l-none bg-white text-slate-900"
+                  placeholder="9XXXXXXXXX"
+                />
+              </div>
+
+              {errors.phone && (
+                <p className="text-xs text-red-500 mt-0.5">
+                  {errors.phone}
+                </p>
+              )}
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="salesAmount">Sales Amount (₱) *</Label>
-              <Input id="salesAmount" type="number" value={formData.salesAmount} disabled={!editingMode} onChange={(e) => setFormData({ ...formData, salesAmount: e.target.value })} className="bg-white text-slate-900" />
+              <Input
+                id="salesAmount"
+                type="text"
+                value={formData.salesAmount}
+                disabled={!editingMode}
+                onChange={(e) => {
+                  const raw = e.target.value.replace(/,/g, '').replace(/\D/g, '');
+                  const formatted = raw.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                  setFormData({ ...formData, salesAmount: formatted });
+                }}
+                className="bg-white text-slate-900" 
+              />
+              {errors.salesAmount && (
+                <p className="text-xs text-red-500 mt-0.5">
+                  {errors.salesAmount}
+                </p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="status">Status *</Label>
@@ -165,6 +244,11 @@ export default function QuotationModal({ isOpen, onClose, onSave, quotation, vie
                   {statuses.map((status) => <SelectItem key={status} value={status}>{getStatusLabel(status)}</SelectItem>)}
                 </SelectContent>
               </Select>
+              {errors.status && (
+                <p className="text-xs text-red-500 mt-0.5">
+                  {errors.status}
+                </p>
+              )}
             </div>
           </div>
 
@@ -177,10 +261,20 @@ export default function QuotationModal({ isOpen, onClose, onSave, quotation, vie
                   {salesReps.map((rep) => <SelectItem key={rep.id} value={rep.id}>{rep.name}</SelectItem>)}
                 </SelectContent>
               </Select>
+              {errors.assignedTo && (
+                <p className="text-xs text-red-500 mt-0.5">
+                  {errors.assignedTo}
+                </p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="lastContactDate">Last Contact Date *</Label>
               <Input id="lastContactDate" type="date" value={formData.lastContactDate} disabled={!editingMode} onChange={(e) => setFormData({ ...formData, lastContactDate: e.target.value })} className="bg-white text-slate-900" />
+              {errors.lastContactDate && (
+                <p className="text-xs text-red-500 mt-0.5">
+                  {errors.lastContactDate}
+                </p>
+              )}
             </div>
           </div>
 
