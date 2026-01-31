@@ -129,7 +129,7 @@
                   <SortButton field="createdAt">Date</SortButton>
                 </th>
 
-                <th className="px-4 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
+                <th className="px-1/2 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
                   <SortButton field="clientName">Client</SortButton>
                 </th>
 
@@ -176,12 +176,12 @@
 
                   return (
                     <tr key={q.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="px-4 py-3 text-xs font-mono truncate text-slate-900">{q.quotationNumber}</td>
-                      <td className="px-4 py-3 text-sm text-slate-900">{formatDate(q.createdAt)}</td>
-                      <td className="px-4 py-3 font-medium truncate text-slate-900">{q.clientName}</td>
-                      <td className="px-4 py-3 text-sm truncate text-slate-900">{assignedUser?.name || 'Unknown'}</td>
-                      <td className="px-4 py-3 font-mono font-medium truncate text-slate-900">{formatCurrency(q.salesAmount)}</td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-1 text-xs font-medium truncate text-slate-900">{q.quotationNumber}</td>
+                      <td className="px-4 py-1 text-sm text-slate-900">{formatDate(q.createdAt)}</td>
+                      <td className="px-1/2 py-1 text-sm truncate text-slate-900">{q.clientName}</td>
+                      <td className="px-4 py-1 text-sm truncate text-slate-900">{assignedUser?.name || 'Unknown'}</td>
+                      <td className="px-4 py-1 text-sm truncate text-slate-900">{formatCurrency(q.salesAmount)}</td>
+                      <td className="px-4 py-1">
                         <Badge className={`${getStatusColor(q.status)} text-white border-0`}>
                           {getStatusLabel(q.status)}
                         </Badge>
