@@ -48,27 +48,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is already logged in
     const storedUser = localStorage.getItem('currentUser');
     if (storedUser) {
       setCurrentUser(JSON.parse(storedUser));
     }
 
-    // Initialize mock users if not exists
     if (!localStorage.getItem('users')) {
       localStorage.setItem('users', JSON.stringify(MOCK_USERS));
     }
 
-    // Initialize sample quotations if not exists
     if (!localStorage.getItem('quotations')) {
       const sampleQuotations: Quotation[] = [
         {
           id: '1',
-          quotationNumber: 'Q-2024-001',
+          quotationNumber: 'DVO.SAM.EQTN.4821',
           clientName: 'Acme Corporation',
           contactPerson: 'Michael Brown',
           email: 'michael@acme.com',
-          phone: '+1 555-0101',
+          phone: '+63 917 123 4567',
           salesAmount: 125000,
           status: 'negotiation',
           lastContactDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
@@ -79,11 +76,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         },
         {
           id: '2',
-          quotationNumber: 'Q-2024-002',
+          quotationNumber: 'DVO.SAM.EQTN.7394',
           clientName: 'TechStart Inc',
           contactPerson: 'Lisa Anderson',
           email: 'lisa@techstart.com',
-          phone: '+1 555-0102',
+          phone: '+63 918 234 5678',
           salesAmount: 85000,
           status: 'proposal_sent',
           lastContactDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
@@ -94,11 +91,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         },
         {
           id: '3',
-          quotationNumber: 'Q-2024-003',
+          quotationNumber: 'DVO.SAM.EQTN.1568',
           clientName: 'Global Logistics',
           contactPerson: 'Robert Chen',
           email: 'robert@globallog.com',
-          phone: '+1 555-0103',
+          phone: '+63 919 345 6789',
           salesAmount: 250000,
           status: 'closed_won',
           lastContactDate: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
@@ -109,11 +106,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         },
         {
           id: '4',
-          quotationNumber: 'Q-2024-004',
+          quotationNumber: 'DVO.SAM.EQTN.9043',
           clientName: 'Retail Solutions',
           contactPerson: 'Emily Davis',
           email: 'emily@retail.com',
-          phone: '+1 555-0104',
+          phone: '+63 920 456 7890',
           salesAmount: 45000,
           status: 'new',
           lastContactDate: new Date().toISOString(),
@@ -123,11 +120,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         },
         {
           id: '5',
-          quotationNumber: 'Q-2024-005',
+          quotationNumber: 'DVO.SAM.EQTN.6217',
           clientName: 'Manufacturing Co',
           contactPerson: 'David Wilson',
           email: 'david@mfg.com',
-          phone: '+1 555-0105',
+          phone: '+63 921 567 8901',
           salesAmount: 180000,
           status: 'closed_lost',
           lastContactDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
@@ -136,6 +133,81 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           createdAt: new Date(Date.now() - 21 * 24 * 60 * 60 * 1000).toISOString(),
           updatedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
         },
+        {
+          id: '6',
+          quotationNumber: 'DVO.SAM.EQTN.3389',
+          clientName: 'NextGen Systems',
+          contactPerson: 'Sophia Martinez',
+          email: 'sophia@nextgen.com',
+          phone: '+63 922 678 9012',
+          salesAmount: 99000,
+          status: 'proposal_sent',
+          lastContactDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+          assignedTo: 'rep-3',
+          notes: 'Awaiting client feedback',
+          createdAt: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString(),
+          updatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+        },
+        {
+          id: '7',
+          quotationNumber: 'DVO.SAM.EQTN.7742',
+          clientName: 'Bright Marketing',
+          contactPerson: 'James Taylor',
+          email: 'james@brightmarketing.com',
+          phone: '+63 923 789 0123',
+          salesAmount: 67000,
+          status: 'negotiation',
+          lastContactDate: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+          assignedTo: 'rep-2',
+          notes: 'Requested pricing adjustment',
+          createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
+          updatedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+        },
+        {
+          id: '8',
+          quotationNumber: 'DVO.SAM.EQTN.2915',
+          clientName: 'Urban Developers',
+          contactPerson: 'Olivia Harris',
+          email: 'olivia@urbandev.com',
+          phone: '+63 924 890 1234',
+          salesAmount: 210000,
+          status: 'new',
+          lastContactDate: new Date().toISOString(),
+          assignedTo: 'rep-3',
+          notes: 'Initial inquiry received',
+          createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
+        {
+          id: '9',
+          quotationNumber: 'DVO.SAM.EQTN.8456',
+          clientName: 'Green Energy Ltd',
+          contactPerson: 'Daniel Kim',
+          email: 'daniel@greenenergy.com',
+          phone: '+63 925 901 2345',
+          salesAmount: 300000,
+          status: 'closed_won',
+          lastContactDate: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
+          assignedTo: 'rep-1',
+          notes: 'Signed multi-year contract',
+          createdAt: new Date(Date.now() - 40 * 24 * 60 * 60 * 1000).toISOString(),
+          updatedAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
+        },
+        {
+          id: '10',
+          quotationNumber: 'DVO.SAM.EQTN.5632',
+          clientName: 'Apex Financial',
+          contactPerson: 'Grace Lee',
+          email: 'grace@apexfinancial.com',
+          phone: '+63 926 012 3456',
+          salesAmount: 142000,
+          status: 'negotiation',
+          lastContactDate: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+          assignedTo: 'rep-2',
+          notes: 'Finalizing contract terms',
+          createdAt: new Date(Date.now() - 18 * 24 * 60 * 60 * 1000).toISOString(),
+          updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+        }
       ];
 
       localStorage.setItem('quotations', JSON.stringify(sampleQuotations));
