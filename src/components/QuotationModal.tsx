@@ -135,7 +135,7 @@ export default function QuotationModal({ isOpen, onClose, onSave, quotation, vie
 
     onSave({
       ...formData,
-      phone: `+63${formData.phone}`,
+      phone: `${formData.phone}`,
       salesAmount: parseFloat(formData.salesAmount.replace(/,/g, '')),
       lastEditedBy: currentUser?.id || '',
     });
