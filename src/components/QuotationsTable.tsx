@@ -47,6 +47,7 @@
     const [currentPage, setCurrentPage] = useState(1);
     const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
     const [appliedStatuses, setAppliedStatuses] = useState<string[]>([]);
+    const [searchTerm, setSearchTerm] = useState('');
 
     const handleSort = (field: SortField) => {
       setCurrentPage(1);
@@ -62,14 +63,26 @@
       setCurrentPage(1);
     }, [statusFilter]);
 
-    const sortedQuotations = filterAndSortQuotations(
+    const processedQuotations = filterAndSortQuotations(
       quotations,
       appliedStatuses,
       sortField,
       sortDirection
     );
-    const totalPages = Math.ceil(sortedQuotations.length / ITEMS_PER_PAGE);
-    const paginatedQuotations = sortedQuotations.slice(
+
+    const searchedQuotations = processedQuotations.filter((q) => {
+      if (!searchTerm.trim()) return true;
+
+      const term = searchTerm.toLowerCase();
+
+      return (
+        q.quotationNumber.toLowerCase().includes(term) ||
+        q.clientName.toLowerCase().includes(term)
+      );
+    });
+
+    const totalPages = Math.ceil(searchedQuotations.length / ITEMS_PER_PAGE);
+    const paginatedQuotations = searchedQuotations.slice(
       (currentPage - 1) * ITEMS_PER_PAGE,
       currentPage * ITEMS_PER_PAGE
     );
@@ -93,28 +106,60 @@
     };
 
     return (
-      <div className="p-8 space-y-6 bg-slate-50 min-h-screen">
+      <div className="p-4 space-y-4 bg-slate-50 min-h-screen">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="space-y-4">
           <div>
-            <h1 className="text-3xl font-semibold text-slate-900 mb-1">Quotations</h1>
+            <h1 className="text-3xl font-semibold text-slate-900">
+              Quotations
+            </h1>
             <p className="text-slate-500">
-              {sortedQuotations.length} {sortedQuotations.length === 1 ? 'quotation' : 'quotations'}
+              Manage and track all quotations
             </p>
           </div>
 
-          <Button
-            onClick={() => {
-              setEditingQuotation(null);
-              setViewOnly(false);
-              setModalOpen(true);
-            }}
-            className="bg-slate-900 hover:bg-slate-800 text-white gap-2"
-          >
-            <Plus className="w-5 h-5" />
-            New Quotation
-          </Button>
+          <div className="flex items-center justify-between">
+            <div className="w-full max-w-md relative">
+              <input
+                type="text"
+                placeholder="Search by quotation # or client name..."
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="w-full px-4 py-2 pr-10 border border-slate-300 text-slate-900 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
+              />
+
+              {searchTerm && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchTerm('');
+                    setCurrentPage(1);
+                  }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+
+            {/* Button */}
+            <Button
+              onClick={() => {
+                setEditingQuotation(null);
+                setViewOnly(false);
+                setModalOpen(true);
+              }}
+              className="bg-slate-900 hover:bg-slate-800 text-white gap-2 ml-4"
+            >
+              <Plus className="w-5 h-5" />
+              New Quotation
+            </Button>
+          </div>
         </div>
+
 
         {/* Table */}
         <div className="bg-white border border-slate-200 rounded-lg shadow-sm overflow-visible">
@@ -162,7 +207,7 @@
             </thead>
 
             <tbody className="divide-y divide-slate-200">
-              {sortedQuotations.length === 0 ? (
+              {searchedQuotations.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="px-4 py-12 text-center text-slate-500">
                     No quotations found

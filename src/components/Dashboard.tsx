@@ -76,7 +76,7 @@ export default function Dashboard({ metrics, onMetricClick }: DashboardProps) {
   ];
 
   return (
-    <div className="p-8 space-y-8 bg-slate-50 min-h-screen">
+    <div className="p-4 space-y-4 bg-slate-50 min-h-screen">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-semibold text-slate-900 mb-1">
