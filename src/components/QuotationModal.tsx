@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Quotation, QuotationStatus } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
-import { getSalesReps } from '@/lib/data-service';
+import { getSalesReps, getUsers } from '@/lib/data-service';
 import { formatDateInput, getStatusLabel } from '@/lib/format';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -23,6 +23,10 @@ interface QuotationModalProps {
 export default function QuotationModal({ isOpen, onClose, onSave, quotation, viewOnly = false }: QuotationModalProps) {
   const { currentUser } = useAuth();
   const salesReps = getSalesReps();
+  const users = getUsers();
+  const lastEditor = quotation
+    ? users.find((user) => user.id === quotation.lastEditedBy)
+    : null;
   const isEditing = !!quotation;
   const [editingMode, setEditingMode] = useState(!viewOnly);
 
@@ -42,7 +46,6 @@ export default function QuotationModal({ isOpen, onClose, onSave, quotation, vie
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isShaking, setIsShaking] = useState(false);
 
   useEffect(() => {
     if (quotation) {
@@ -113,13 +116,18 @@ export default function QuotationModal({ isOpen, onClose, onSave, quotation, vie
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length > 0) {
-      setIsShaking(true);
-      setTimeout(() => setIsShaking(false), 300);
       return false;
     }
 
     return true;
   };
+
+  const formatDateOnly = (date: string) =>
+  new Date(date).toLocaleDateString('en-PH', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -129,6 +137,7 @@ export default function QuotationModal({ isOpen, onClose, onSave, quotation, vie
       ...formData,
       phone: `+63${formData.phone}`,
       salesAmount: parseFloat(formData.salesAmount.replace(/,/g, '')),
+      lastEditedBy: currentUser?.id || '',
     });
     onClose();
   };
@@ -143,15 +152,33 @@ export default function QuotationModal({ isOpen, onClose, onSave, quotation, vie
   return (
     <Dialog open={isOpen} onOpenChange={handleCancel}>
       <DialogContent onOpenAutoFocus={(e) => e.preventDefault()} className="max-w-2xl bg-white fade-in-scale shadow-lg border border-slate-200">
-        <DialogHeader className="flex justify-between items-center">
-          <DialogTitle className="text-2xl font-bold text-slate-900">
-            {editingMode ? (isEditing ? 'Edit Quotation' : 'New Quotation') : 'View Quotation'}
-          </DialogTitle>
-          <div className="text-slate-800 font-mono font-bold text-lg">{formData.quotationNumber}</div>
+        <DialogHeader className="space-y-1">
+          <div className="flex justify-between items-center">
+            <DialogTitle className="text-2xl font-bold text-slate-900">
+              {editingMode
+                ? isEditing
+                  ? 'Edit Quotation'
+                  : 'New Quotation'
+                : 'View Quotation'}
+            </DialogTitle>
+
+            <div className="text-slate-800 font-mono font-bold text-lg">
+              {formData.quotationNumber}
+            </div>
+          </div>
+
+          {quotation && !editingMode && lastEditor && (
+            <div className="text-xs text-slate-500">
+              Last updated by{' '}
+              <span className="font-medium text-slate-700">
+                {lastEditor.name}
+              </span>{' '}
+              on {formatDateOnly(quotation.updatedAt)}
+            </div>
+          )}
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 mt-4 text-slate-900">
-          {/* Grid Inputs */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="clientName">Client Name *</Label>

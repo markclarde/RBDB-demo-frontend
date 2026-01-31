@@ -26,10 +26,11 @@ export interface Quotation {
   salesAmount: number;
   status: QuotationStatus;
   lastContactDate: string;
-  assignedTo: string; // User ID
+  assignedTo: string;
   notes?: string;
   createdAt: string;
   updatedAt: string;
+  lastEditedBy?: string;
 }
 
 // Dashboard Metrics
