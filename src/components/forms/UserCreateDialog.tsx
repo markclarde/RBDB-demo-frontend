@@ -16,26 +16,38 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useRbac, DEMO_ROLE_OPTIONS } from "@/hooks/useRbac";
+import { usersApi } from "@/api/users";
+import { CreateUserPayload } from "@/types/user";
 
 const schema = z.object({
-  name: z.string().min(1, "Name is required"),
+  username: z.string().min(1, "Username is required"),
   email: z.string().email("Enter a valid email"),
-  role: z.enum(["super_admin", "admin", "sales_representative"]),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  role_id: z.number(),
+  branch_id: z.number().optional(),
 });
 
-type FormValues = z.infer<typeof schema>;
+type FormValues = CreateUserPayload;
 
 export function UserCreateDialog({
   open,
   onOpenChange,
+  onSuccess,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSuccess: () => void;
 }) {
   const rbac = useRbac();
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { name: "", email: "", role: "sales_representative" },
+    defaultValues: {
+      username: "",
+      email: "",
+      password: "",
+      role_id: 2,
+      branch_id: undefined,
+    },
   });
 
   const canCreate = rbac.can("create_users");
@@ -57,39 +69,44 @@ export function UserCreateDialog({
         ) : (
           <form
             className="space-y-4"
-            onSubmit={form.handleSubmit(async (values) => {
-              toast.success(`User created: ${values.email}`);
-              onOpenChange(false);
-              form.reset();
+            onSubmit={form.handleSubmit(async (values: FormValues) => {
+              try {
+                await usersApi.createUser(values);
+                toast.success("User created successfully");
+
+                onOpenChange(false);
+                form.reset();
+              } catch (err: any) {
+                toast.error(err.message || "Failed to create user");
+              }
             })}
           >
             <div className="space-y-2">
-              <Label htmlFor="name" className="text-xs uppercase tracking-wider">
-                Name
-              </Label>
-              <Input id="name" {...form.register("name")} placeholder="Jane Doe" />
-              {form.formState.errors.name ? (
+              <Label htmlFor="username">Username</Label>
+              <Input id="username" {...form.register("username")} />
+              {form.formState.errors.username && (
                 <p className="text-sm text-destructive">
-                  {form.formState.errors.name.message}
+                  {form.formState.errors.username.message}
                 </p>
-              ) : null}
+              )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-xs uppercase tracking-wider">
-                Email
-              </Label>
+              <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
                 {...form.register("email")}
-                placeholder="jane@company.com"
               />
-              {form.formState.errors.email ? (
-                <p className="text-sm text-destructive">
-                  {form.formState.errors.email.message}
-                </p>
-              ) : null}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                {...form.register("password")}
+              />
             </div>
 
             <div className="space-y-2">
@@ -98,26 +115,38 @@ export function UserCreateDialog({
               </Label>
               <div className="relative">
                 <select
-                aria-label="branch"
-                  id="role"
-                  className="flex h-10 w-full appearance-none rounded-md border border-input bg-background px-3 py-2 pr-9 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                  value={form.watch("role")}
+                  aria-label="Role"
+                  id="role_id"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  value={form.watch("role_id")}
                   onChange={(e) =>
-                    form.setValue("role", e.target.value as FormValues["role"], {
-                      shouldDirty: true,
-                    })
+                    form.setValue("role_id", Number(e.target.value))
                   }
                 >
-                  {DEMO_ROLE_OPTIONS.map((r) => (
-                    <option key={r.value} value={r.value}>
-                      {r.label}
-                    </option>
-                  ))}
+                  <option value={1}>Super Admin</option>
+                  <option value={2}>Admin</option>
+                  <option value={3}>Sales Representative</option>
                 </select>
                 <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
                   ▾
                 </span>
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="branch_id">Branch (optional)</Label>
+              <Input
+                id="branch_id"
+                type="number"
+                placeholder="Branch ID"
+                onChange={(e) => {
+                  const value = e.target.value;
+                  form.setValue(
+                    "branch_id",
+                    value ? Number(value) : undefined
+                  );
+                }}
+              />
             </div>
 
             <div className="flex items-center justify-end gap-2 pt-2">

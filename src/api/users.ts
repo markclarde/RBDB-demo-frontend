@@ -11,8 +11,14 @@ export const usersApi = {
 
   getMe: () => http.get<User>("/users/me"),
 
-  create: (payload: CreateUserPayload) =>
-    http.post<User>("/users", payload),
+  createUser: (data: {
+    username: string;
+    email: string;
+    password: string;
+    role_id: number;
+    branch_id?: number;
+  }) =>
+    http.post("/users", data),
 
   updateBranch: (userId: number, payload: UpdateUserBranchPayload) =>
     http.patch<User>(`/users/${userId}/branch`, payload),

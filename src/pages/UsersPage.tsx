@@ -256,11 +256,11 @@ export function UsersPage() {
         </CardContent>
       </Card>
 
-      {/* <UserCreateDialog
+      <UserCreateDialog
         open={createOpen}
         onOpenChange={setCreateOpen}
         onSuccess={fetchUsers}
-      /> */}
+      />
     </div>
   );
 }
