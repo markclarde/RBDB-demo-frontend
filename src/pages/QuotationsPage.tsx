@@ -21,59 +21,46 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { QuotationCreateDialog } from "@/components/forms/QuotationCreateDialog";
 
-type QuotationStatus = "Approved" | "Pending" | "Rejected";
-
-type Quotation = {
-  id: string;
-  clientName: string;
-  amount: number;
-  status: QuotationStatus;
-  createdAt: string;
-};
-
-const allRows: Quotation[] = Array.from({ length: 42 }).map((_, i) => {
-  const idx = i + 1;
-  const statuses: QuotationStatus[] = ["Approved", "Pending", "Rejected"];
-  return {
-    id: `Q-${1000 + idx}`,
-    clientName: [
-      "Northwind",
-      "Acme Corp",
-      "Globex",
-      "Initech",
-      "Umbrella",
-      "Wayne Enterprises",
-    ][idx % 6],
-    amount: 12500 + (idx % 9) * 1775,
-    status: statuses[idx % statuses.length],
-    createdAt: new Date(Date.now() - idx * 86400000).toISOString(),
-  };
-});
+import { getQuotations } from "@/api/quotations";
+import type { Quotation } from "@/types/quotation";
 
 export function QuotationsPage() {
   const [query, setQuery] = React.useState("");
-  const [createOpen, setCreateOpen] = React.useState(false);
+  const [rows, setRows] = React.useState<Quotation[]>([]);
+  const [loading, setLoading] = React.useState(true);
 
-  const rows = React.useMemo(() => {
+  React.useEffect(() => {
+    async function load() {
+      try {
+        const data = await getQuotations();
+        setRows(data);
+      } catch (err) {
+        toast.error("Failed to load quotations");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    load();
+  }, []);
+
+  const filteredRows = React.useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return allRows;
-    return allRows.filter(
-      (r) =>
-        r.id.toLowerCase().includes(q) ||
-        r.clientName.toLowerCase().includes(q) ||
-        r.status.toLowerCase().includes(q)
+    if (!q) return rows;
+
+    return rows.filter((r) =>
+      r.quotation_number.toLowerCase().includes(q) ||
+      r.client_name.toLowerCase().includes(q) ||
+      r.status.toLowerCase().includes(q)
     );
-  }, [query]);
+  }, [rows, query]);
 
   return (
     <div className="space-y-6">
       <PageHeader
         title="Quotations"
         description="Search, review, and manage customer quotations."
-        actionLabel="Create new"
-        onAction={() => setCreateOpen(true)}
       />
 
       <Card className="border-border/70">
@@ -84,103 +71,120 @@ export function QuotationsPage() {
               <Input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search by ID, client, or status…"
+                placeholder="Search by quotation no, client, or status…"
                 className="pl-9"
               />
             </div>
-
-            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:justify-end">
-              <Button
-                className="w-full sm:w-auto"
-                variant="secondary"
-                onClick={() => toast.message("Filters")}
-              >
-                Status: All
-              </Button>
-            </div>
           </div>
 
-          <div className="mt-5 overflow-hidden rounded-md border">
-            <div className="w-full overflow-x-auto">
-            <Table>
+          <div className="mt-5 rounded-md border">
+            <Table className="table-fixed w-full">
               <TableHeader className="bg-[hsl(var(--table-head))]">
                 <TableRow>
-                  <TableHead className="w-[140px]">ID</TableHead>
-                  <TableHead>Client</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Date created</TableHead>
-                  <TableHead className="w-[80px] text-right">Actions</TableHead>
+                  <TableHead className="w-[15%]">Quotation No</TableHead>
+                  <TableHead className="w-[10%]">Date</TableHead>
+                  <TableHead className="w-[18%]">Client</TableHead>
+                  <TableHead className="w-[18%]">Sales Representative</TableHead>
+                  <TableHead className="w-[12%] text-left">Amount</TableHead>
+                  <TableHead className="w-[12%]">Status</TableHead>
+                  <TableHead className="w-[10%]">Last Contact</TableHead>
+                  <TableHead className="w-[5%] text-left">Actions</TableHead>
                 </TableRow>
               </TableHeader>
+
               <TableBody>
-                {rows.slice(0, 10).map((r) => (
-                  <TableRow key={r.id} className="hover:bg-muted/40">
-                    <TableCell className="font-mono text-sm">{r.id}</TableCell>
-                    <TableCell className="font-medium">{r.clientName}</TableCell>
-                    <TableCell className="text-right font-mono tabular-nums">
-                      ${r.amount.toLocaleString()}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          r.status === "Approved"
-                            ? "default"
-                            : r.status === "Pending"
-                              ? "secondary"
-                              : "destructive"
-                        }
-                      >
-                        {r.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground tabular-nums">
-                      {new Date(r.createdAt).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => toast.message("View")}>
-                            View
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => toast.message("Edit")}>
-                            Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            className="text-destructive"
-                            onClick={() => toast.error("Delete")}
-                          >
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center py-6">
+                      Loading...
                     </TableCell>
                   </TableRow>
-                ))}
+                ) : filteredRows.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center py-6">
+                      No quotations found.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredRows.slice(0, 10).map((r) => (
+                    <TableRow key={r.id} className="hover:bg-muted/40">
+                      <TableCell className="font-mono text-sm break-words">
+                        {r.quotation_number}
+                      </TableCell>
+
+                      <TableCell>
+                        {new Date(r.created_at).toLocaleDateString()}
+                      </TableCell>
+
+                      <TableCell className="font-medium break-words">
+                        {r.client_name}
+                      </TableCell>
+
+                      <TableCell className="break-words">
+                        {r.sales_rep.profile
+                          ? `${r.sales_rep.profile.first_name} ${r.sales_rep.profile.last_name}`
+                          : r.sales_rep.username}
+                      </TableCell>
+
+                      <TableCell className="text-left font-mono tabular-nums">
+                        ₱
+                        {Number(r.amount).toLocaleString("en-PH", {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
+                      </TableCell>
+
+                      <TableCell>
+                        <Badge
+                          variant={
+                            r.status === "APPROVED"
+                              ? "default"
+                              : r.status === "PENDING"
+                              ? "secondary"
+                              : "destructive"
+                          }
+                        >
+                          {r.status}
+                        </Badge>
+                      </TableCell>
+
+                      <TableCell className="text-sm text-muted-foreground">
+                        {r.last_contact_at
+                          ? new Date(r.last_contact_at).toLocaleDateString()
+                          : "-"}
+                      </TableCell>
+
+                      <TableCell className="text-left">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem>View</DropdownMenuItem>
+                            <DropdownMenuItem>Edit</DropdownMenuItem>
+                            <DropdownMenuItem className="text-destructive">
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
-            </div>
           </div>
 
           <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground">
-            <div>Showing 10 of {rows.length}</div>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" disabled>
-                Previous
-              </Button>
-              <Button variant="outline" size="sm">
-                Next
-              </Button>
+            <div>
+              Showing {Math.min(10, filteredRows.length)} of{" "}
+              {filteredRows.length}
             </div>
           </div>
         </CardContent>
       </Card>
-      <QuotationCreateDialog open={createOpen} onOpenChange={setCreateOpen} />
     </div>
   );
 }
