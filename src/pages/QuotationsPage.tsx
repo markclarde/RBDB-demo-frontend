@@ -24,11 +24,13 @@ import { toast } from "sonner";
 
 import { getQuotations } from "@/api/quotations";
 import type { Quotation } from "@/types/quotation";
+import { QuotationCreateDialog } from "@/components/forms/QuotationCreateDialog";
 
 export function QuotationsPage() {
   const [query, setQuery] = React.useState("");
   const [rows, setRows] = React.useState<Quotation[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const [openCreate, setOpenCreate] = React.useState(false);
 
   React.useEffect(() => {
     async function load() {
@@ -49,19 +51,26 @@ export function QuotationsPage() {
     const q = query.trim().toLowerCase();
     if (!q) return rows;
 
-    return rows.filter((r) =>
-      r.quotation_number.toLowerCase().includes(q) ||
-      r.client_name.toLowerCase().includes(q) ||
-      r.status.toLowerCase().includes(q)
+    return rows.filter(
+      (r) =>
+        r.quotation_number.toLowerCase().includes(q) ||
+        r.client_name.toLowerCase().includes(q) ||
+        r.status.toLowerCase().includes(q)
     );
   }, [rows, query]);
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Quotations"
-        description="Search, review, and manage customer quotations."
-      />
+    <div className="space-y-1">
+      <div className="flex items-center justify-between">
+        <PageHeader
+          title="Quotations"
+          description="Search, review, and manage customer quotations."
+        />
+
+        <Button onClick={() => setOpenCreate(true)}>
+          Add Quotation
+        </Button>
+      </div>
 
       <Card className="border-border/70">
         <CardContent className="pt-6">
@@ -185,6 +194,12 @@ export function QuotationsPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Create Dialog */}
+      <QuotationCreateDialog
+        open={openCreate}
+        onOpenChange={setOpenCreate}
+      />
     </div>
   );
 }

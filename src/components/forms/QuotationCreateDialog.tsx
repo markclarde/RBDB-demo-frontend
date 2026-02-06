@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
-// import { quotationsApi } from "@/api/quotations"; // Uncomment when ready
+import { createQuotation } from "@/api/quotations";
 
 const schema = z.object({
   clientName: z.string().min(1, "Client name is required"),
@@ -41,6 +41,26 @@ export function QuotationCreateDialog({
 
   const canCreate = can("QUOTATION_CREATE");
 
+  const onSubmit = async (values: FormValues) => {
+    try {
+      await createQuotation({
+        client_name: values.clientName,
+        amount: values.amount,
+        status: "PENDING",
+        last_contact_at: new Date().toISOString(),
+      });
+
+      toast.success(`Quotation created for ${values.clientName}`);
+
+      onOpenChange(false);
+      form.reset();
+    } catch (err: any) {
+      toast.error(
+        err?.response?.data?.message || "Failed to create quotation"
+      );
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[520px]">
@@ -58,20 +78,7 @@ export function QuotationCreateDialog({
         ) : (
           <form
             className="space-y-4"
-            onSubmit={form.handleSubmit(async (values) => {
-              try {
-                // Replace this with real API call when ready:
-                // await quotationsApi.create(values);
-
-                toast.success(`Quotation created for ${values.clientName}`);
-                onOpenChange(false);
-                form.reset();
-              } catch (err: any) {
-                toast.error(
-                  err?.response?.data?.message || "Failed to create quotation"
-                );
-              }
-            })}
+            onSubmit={form.handleSubmit(onSubmit)}
           >
             <div className="space-y-2">
               <Label htmlFor="clientName">Client name</Label>
