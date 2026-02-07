@@ -90,13 +90,13 @@ export function QuotationsPage() {
             <Table className="table-fixed w-full">
               <TableHeader className="bg-[hsl(var(--table-head))]">
                 <TableRow>
-                  <TableHead className="w-[15%]">Quotation No</TableHead>
-                  <TableHead className="w-[10%]">Date</TableHead>
-                  <TableHead className="w-[18%]">Client</TableHead>
-                  <TableHead className="w-[18%]">Sales Representative</TableHead>
-                  <TableHead className="w-[12%] text-left">Amount</TableHead>
-                  <TableHead className="w-[12%]">Status</TableHead>
-                  <TableHead className="w-[10%]">Last Contact</TableHead>
+                  <TableHead className="w-[9%]">Quotation No</TableHead>
+                  <TableHead className="w-[5%]">Date</TableHead>
+                  <TableHead className="w-[11%]">Client</TableHead>
+                  <TableHead className="w-[11%]">Sales Representative</TableHead>
+                  <TableHead className="w-[8%] text-left">Amount</TableHead>
+                  <TableHead className="w-[9%]">Status</TableHead>
+                  <TableHead className="w-[7%]">Last Contact</TableHead>
                   <TableHead className="w-[5%] text-left">Actions</TableHead>
                 </TableRow>
               </TableHeader>
